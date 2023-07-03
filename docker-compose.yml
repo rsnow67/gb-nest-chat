@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  chat:
+    depends_on:
+      - redis
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nest-chat-realtime-docker
+    container_name: chat
+    restart: always
+    tty: true
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    working_dir: /usr/src/app
+    environment:
+      SERVICE_NAME: chat
+      SERVICE_TAGS: dev
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - nest-chat-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: [
+        "redis-server",
+        "--bind",
+        "redis",
+        "--port",
+        "6379"
+    ]
+    volumes:
+      - red_data:/var/lib/redis
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    networks:
+      - nest-chat-network
+
+networks:
+  nest-chat-network:
+    driver: bridge
+    
+volumes:
+  red_data: {}
